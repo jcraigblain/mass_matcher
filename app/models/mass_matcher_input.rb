@@ -96,6 +96,7 @@ class MassMatcherInput
     @residues.each do |residue|
       header << residue
     end
+    header << 'Formula'
     header << 'Exp Mass'
     header << 'Error'
     header << 'Match' if @match
@@ -112,7 +113,7 @@ class MassMatcherInput
           residues.each do |residue|
             match << oligo[residue]
           end
-          match << oligo.mass.round(4) << error.round(2)
+          match << oligo.formula_string << oligo.mass.round(4) << error.round(2)
           if product
             if fragcomps_array.include?(oligo.basecomp_hash)
               match << 1
