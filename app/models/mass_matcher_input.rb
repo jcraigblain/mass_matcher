@@ -27,13 +27,15 @@ class MassMatcherInput
     @product_sequence = attributes[:product_seq].upcase.gsub(/\W/,'')
     @input_file = attributes[:input_data]
     
-    @file_data = @input_file.read
-    if @file_data =~ /\r\n/
-      @file_data = @file_data.split("\r\n")
-    else
-      @file_data = @file_data.split("\n")
+    unless @input_file.nil?
+      @file_data = @input_file.read
+      if @file_data =~ /\r\n/
+        @file_data = @file_data.split("\r\n")
+      else
+        @file_data = @file_data.split("\n")
+      end
+      @input_header = @file_data.shift
     end
-    @input_header = @file_data.shift
   end
   
   def persisted?
@@ -53,7 +55,9 @@ class MassMatcherInput
     errors.add(:residues, "cannot exceed 5 in count") unless @residues.length <= MAXIMUM_RESIDUES
   end
   def input_file_valid
-    if !@input_header.match(/\tMass\t/) || @input_header.empty? || @file_data.empty?
+    if @input_file.nil?
+      errors.add(:input_file, "must be provided")
+    elsif !@input_header.match(/\tMass\t/) || @input_header.empty? || @file_data.empty?
       errors.add(:input_file, "must have a 'Mass' header and at least one row of data")
     end
   end
