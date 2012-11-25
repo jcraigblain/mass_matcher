@@ -57,7 +57,7 @@ class MassMatcherInput
   def input_file_valid
     if @input_file.nil?
       errors.add(:input_file, "must be provided")
-    elsif !@input_header.match(/\tMass\t/) || @input_header.empty? || @file_data.empty?
+    elsif !@input_header.match(/Mass/) || @input_header.empty? || @file_data.empty?
       errors.add(:input_file, "must have a 'Mass' header and at least one row of data")
     end
   end
