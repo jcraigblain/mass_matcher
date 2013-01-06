@@ -12,11 +12,17 @@ class Derivative < Object
                 :t => {:formula => 'H4O7P2', :name => 'triphosphate'},
                 :d => {:formula => 'H3O4P', :name => 'diphosphate'},
                 :y => {:formula => 'C29H36N2O2', :name => 'Cy3'},
-                :z => {:formula => 'C31H38N2O2', :name => 'Cy5'}}
+                :z => {:formula => 'C31H38N2O2', :name => 'Cy5'},
+                :x => {:formula => '', :name => 'Custom'}
+                }
   
-  def initialize(derivative='p')
+  def initialize(derivative, formula='')
     @derivative = derivative.to_sym
-    @formula = Formula.new(DERIVATIVE[@derivative][:formula])
+    if @derivative == :x
+      @formula = Formula.new(formula)
+    else
+      @formula = Formula.new(DERIVATIVE[@derivative][:formula])
+    end
   end
   
   def formula

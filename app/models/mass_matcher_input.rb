@@ -23,7 +23,11 @@ class MassMatcherInput
     @maximum_length = attributes[:max_len].to_i
     @maximum_error = attributes[:max_ppm].to_r
     @residues = attributes[:residues]
-    @derivatives = attributes[:derivatives]
+    @derivatives = attributes[:derivatives] || []
+    if attributes[:custom_derivative].length > 0
+      @derivatives << 'x'
+      @custom_derivative_formula = attributes[:custom_derivative]
+    end
     @product_sequence = attributes[:product_seq].upcase.gsub(/\W/,'')
     @input_file = attributes[:input_data]
     
@@ -43,7 +47,11 @@ class MassMatcherInput
   end
     
   def derivatives_valid
-    errors.add(:derivatives, "not valid") unless @derivatives == @derivatives & Derivative.known_codes
+    if @derivatives.length == 0
+      errors.add(:derivatives, "must be selected")
+    elsif @derivatives != @derivatives & Derivative.known_codes
+      errors.add(:derivatives, "not valid")
+    end
   end
   def residues_valid
     errors.add(:residues, "not valid") unless @residues == @residues & Residue.known_codes
@@ -83,7 +91,11 @@ class MassMatcherInput
     
     derivatives = []
     @derivatives.each do |derivative_code|
-      derivatives << Derivative.new(derivative_code)
+      if derivative_code == 'x'
+        derivatives << Derivative.new(derivative_code, @custom_derivative_formula)
+      else
+        derivatives << Derivative.new(derivative_code)
+      end
     end
     
     oligo_set = OligoCompSet.new(@minimum_length,@maximum_length,residues,derivatives)

@@ -1,1 +1,4 @@
 <%= select_tag("derivatives[]", options_for_select(@derivatives), :size => @derivatives.length.to_s, :multiple => "multiple")%>
+
+<p><%= label_tag(:custom_derivative, "Formula of custom derivative:")%>
+<%= text_field_tag(:custom_derivative, '', :size => 40, :maxlength => 30, :placeholder => "Optional")%>
