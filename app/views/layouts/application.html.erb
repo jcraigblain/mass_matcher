@@ -8,7 +8,15 @@
 </head>
 <body>
 
-<%= yield %>
-
+<div id="navigation">
+	<ul class="navigation">
+		<li><%=link_to "Match Data File",file_match_form_path%></li>
+		<li>Match Single Mass</li>
+		<li>Generate List of Masses</li>
+		<li>Generate Single Mass</li>
+	</ul>
+</div>
+<div id="content">
+	<%= yield %>
 </body>
 </html>

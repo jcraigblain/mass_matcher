@@ -52,7 +52,11 @@ class MassMatcherInput
     errors.add(:minimum_length, "must be less than or equal to maximum length") unless @minimum_length <= @maximum_length
   end
   def residue_count_valid
-    errors.add(:residues, "cannot exceed 5 in count") unless @residues.length <= MAXIMUM_RESIDUES
+    if @residues.nil?
+      errors.add(:residues, "must be selected")
+    elsif @residues.length > MAXIMUM_RESIDUES
+      errors.add(:residues, "cannot exceed 5 in count")
+    end 
   end
   def input_file_valid
     if @input_file.nil?

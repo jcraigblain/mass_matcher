@@ -1,0 +1,14 @@
+<table>
+	<tr>
+		<%@header.each do |title|%>
+		<th><%=title%></th>
+		<%end%>
+	</tr>
+	<%@output.each do |row|%>
+		<tr>
+			<%row.each do |cell|%>
+				<td><%=cell%></td>
+			<%end%>
+		</tr>
+	<%end%>
+</table>

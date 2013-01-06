@@ -3,14 +3,14 @@ require('./lib/mass_matcher/oligo_seq')
 
 class MassMatcherInputsController < ApplicationController
   
-  def form
+  def file_match_form
     @bases = Residue.known_bases
     @sugars = Residue.known_sugars
     @derivatives = []
     Derivative.known_derivatives.each { |code, name| @derivatives << [name, code] }
   end
   
-  def results
+  def file_match_results
     mm_input = MassMatcherInput.new(params)
     download = params[:download]
 
@@ -18,7 +18,7 @@ class MassMatcherInputsController < ApplicationController
       @header, @output = mm_input.process
     else
       flash[:error] = mm_input.errors.full_messages
-      redirect_to(:action=>"form")
+      redirect_to file_match_form_path
     end
     
     if download == "1"

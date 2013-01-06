@@ -1,0 +1,18 @@
+<table>
+	<tr>
+		<th></th>
+		<% @bases.each do |base_code, base_name| %>
+			<th title="<%=base_name%>"><%=base_code%></th>
+		<%end%>
+	</tr>
+	<%@sugars.each do |sugar_code, sugar_name|%>
+		<tr>
+			<th title="<%=sugar_name%>"><%=sugar_code%></th>
+			<% @bases.each do |base_code, base_name|%>
+				<th title="<%=sugar_name%>-<%=base_name%>">
+					<%= check_box_tag("residues[]", "#{sugar_code}#{base_code}")%>
+				</th>
+			<%end%>
+		</tr>
+	<%end%>
+</table>
