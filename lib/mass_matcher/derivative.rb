@@ -28,6 +28,9 @@ class Derivative < Object
   def formula
     @formula.clone
   end
+  def formula_as_string
+    @formula.as_string
+  end
   def mass
     @formula.mass
   end

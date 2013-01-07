@@ -21,7 +21,7 @@ class MassMatcherInput
     
     @minimum_length = attributes[:min_len].to_i
     @maximum_length = attributes[:max_len].to_i
-    @maximum_error = attributes[:max_ppm].to_r
+    @maximum_error = attributes[:max_ppm].to_f
     @residues = attributes[:residues]
     @derivatives = attributes[:derivatives] || []
     if attributes[:custom_derivative].length > 0
@@ -92,7 +92,7 @@ class MassMatcherInput
     derivatives = []
     @derivatives.each do |derivative_code|
       if derivative_code == 'x'
-        derivatives << Derivative.new(derivative_code, @custom_derivative_formula)
+        derivatives << Derivative.new(derivative_code, @custom_derivative_formula) 
       else
         derivatives << Derivative.new(derivative_code)
       end
@@ -102,13 +102,21 @@ class MassMatcherInput
     
     mass_index = @input_header.split("\t").index("Mass")
     
+    meta_info = {:Filename => @input_file.original_filename}
     unless @product_sequence.empty?
       product = true
       residue_array = []
       base_array = @product_sequence.split('')
       base_array.each { |base| residue_array << Residue.new('r', base) }
       fragcomps_array = OligoSeq.new(residue_array, Derivative.new('p')).all_fragment_basecomps
+      meta_info[:Product] = @product_sequence
     end
+    meta_info[:Minimum_length] = @minimum_length
+    meta_info[:Maximum_length] = @maximum_length
+    meta_info[:Maximum_ppm_error] = @maximum_error
+    meta_info[:Residues] = @residues.join("\t")
+    meta_info[:Derivatives] = @derivatives.join("\t")
+    meta_info[:Custom_derivative] = @custom_derivative_formula if @derivatives.include? 'x'
     
     header = @input_header.split(/\t/)
     header << "Length"
@@ -119,7 +127,7 @@ class MassMatcherInput
     header << 'Formula'
     header << 'Exp Mass'
     header << 'Error'
-    header << 'Match' if @match
+    header << 'Match' if product
     
     output = []
     @file_data.each do |row|
@@ -146,7 +154,7 @@ class MassMatcherInput
       end
     end
     
-    [header, output]
+    [meta_info, header, output]
     
   end
     
