@@ -2,15 +2,15 @@ require ('./lib/mass_matcher/formula')
 
 class Derivative < Object
   
-  DERIVATIVE = {:c => {:formula => 'C0', :name => 'cycle'},
+  DERIVATIVE = {:c => {:formula => 'C0', :name => 'Cycle'},
                 :o => {:formula => 'H1O-2P-1', :name => '5-OH'},
-                :p => {:formula => 'H2O', :name => '5-phosphate'},
-                :i => {:formula => 'C3H4N2', :name => 'phosphorimidazolide'},
-                :m => {:formula => 'C4H6N2', :name => '5-phosphor-methylimidazolide'},
-                :e => {:formula => 'C2H6O', :name => 'phosphorethanol'},
+                :p => {:formula => 'H2O', :name => '5-Phosphate'},
+                :i => {:formula => 'C3H4N2', :name => 'Phosphorimidazolide'},
+                :m => {:formula => 'C4H6N2', :name => '5-Phosphor-methylimidazolide'},
+                :e => {:formula => 'C2H6O', :name => 'Phosphorethanol'},
                 :h => {:formula => 'C3H2OF6', :name => 'HFIP'},
-                :t => {:formula => 'H4O7P2', :name => 'triphosphate'},
-                :d => {:formula => 'H3O4P', :name => 'diphosphate'},
+                :t => {:formula => 'H4O7P2', :name => 'Triphosphate'},
+                :d => {:formula => 'H3O4P', :name => 'Diphosphate'},
                 :y => {:formula => 'C29H36N2O2', :name => 'Cy3'},
                 :z => {:formula => 'C31H38N2O2', :name => 'Cy5'},
                 :x => {:formula => '', :name => 'Custom'}
@@ -40,7 +40,7 @@ class Derivative < Object
   
   def self.known_derivatives
     derivatives = {}
-    DERIVATIVE.each { |derivative, info| derivatives[derivative.to_s] = info[:name] }
+    DERIVATIVE.each { |derivative, info| derivatives[derivative.to_s] = info[:name] unless derivative == :x }
     derivatives
   end
   def self.known_codes
