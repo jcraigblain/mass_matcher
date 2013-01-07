@@ -15,15 +15,17 @@ class MassMatcherInputsController < ApplicationController
     download = params[:download]
 
     if mm_input.valid?
-      @meta_info, @header, @output = mm_input.process
+      @header = mm_input.header
+      @output = mm_input.process
     else
       flash[:error] = mm_input.errors.full_messages
       redirect_to file_match_form_path
     end
     
     if download == "1"
+      meta_info = mm_input.meta_info
       content = ''
-      @meta_info.each do |key, value|
+      meta_info.each do |key, value|
         content += "#{key}\t#{value}\n"
       end
       content += @header.join("\t")

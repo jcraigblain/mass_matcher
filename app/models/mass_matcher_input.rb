@@ -9,7 +9,7 @@ class MassMatcherInput
   extend ActiveModel::Naming
   
   attr_reader :errors
-  attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivatives, :residues, :input_file
+  attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file
   
   validate :derivatives_valid, :residues_valid, :min_len_less_than_max_len, :product_sequence_valid, :residue_count_valid, :input_file_valid
   validates :minimum_length, :presence => true, :numericality => { :only_integer => true, :greater_than => 0, :less_than_or_equal_to => MAXIMUM_LENGTH}
@@ -22,10 +22,10 @@ class MassMatcherInput
     @minimum_length = attributes[:min_len].to_i
     @maximum_length = attributes[:max_len].to_i
     @maximum_error = attributes[:max_ppm].to_f
-    @residues = attributes[:residues]
-    @derivatives = attributes[:derivatives] || []
+    @residue_codes = attributes[:residues]
+    @derivative_codes = attributes[:derivatives] || []
     if attributes[:custom_derivative].length > 0
-      @derivatives << 'x'
+      @derivative_codes << 'x'
       @custom_derivative_formula = attributes[:custom_derivative]
     end
     @product_sequence = attributes[:product_seq].upcase.gsub(/\W/,'')
@@ -47,22 +47,22 @@ class MassMatcherInput
   end
     
   def derivatives_valid
-    if @derivatives.length == 0
+    if @derivative_codes.length == 0
       errors.add(:derivatives, "must be selected")
-    elsif @derivatives != @derivatives & Derivative.known_codes
+    elsif @derivative_codes != @derivative_codes & Derivative.known_codes
       errors.add(:derivatives, "not valid")
     end
   end
   def residues_valid
-    errors.add(:residues, "not valid") unless @residues == @residues & Residue.known_codes
+    errors.add(:residues, "not valid") unless @residue_codes == @residue_codes & Residue.known_codes
   end
   def min_len_less_than_max_len
     errors.add(:minimum_length, "must be less than or equal to maximum length") unless @minimum_length <= @maximum_length
   end
   def residue_count_valid
-    if @residues.nil?
+    if @residue_codes.nil?
       errors.add(:residues, "must be selected")
-    elsif @residues.length > MAXIMUM_RESIDUES
+    elsif @residue_codes.length > MAXIMUM_RESIDUES
       errors.add(:residues, "cannot exceed 5 in count")
     end 
   end
@@ -86,54 +86,44 @@ class MassMatcherInput
     output_filename
   end
   
-  def process
-    
-    residues = []
-    @residues.each do |residue_code|
-      residue_code.scan(/([a-z]+)([A-Z]+)/) do |sugar, base|
-        residues << Residue.new(sugar,base)
-      end
-    end
-    
-    derivatives = []
-    @derivatives.each do |derivative_code|
-      if derivative_code == 'x'
-        derivatives << Derivative.new(derivative_code, @custom_derivative_formula) 
-      else
-        derivatives << Derivative.new(derivative_code)
-      end
-    end
-    
-    oligo_set = OligoCompSet.new(@minimum_length,@maximum_length,residues,derivatives)
-    
-    mass_index = @input_header.split("\t").index("Mass")
-    
-    meta_info = {:Filename => @input_file.original_filename}
-    unless @product_sequence.empty?
-      product = true
-      residue_array = []
-      base_array = @product_sequence.split('')
-      base_array.each { |base| residue_array << Residue.new('r', base) }
-      fragcomps_array = OligoSeq.new(residue_array, Derivative.new('p')).all_fragment_basecomps
-      meta_info[:Product] = @product_sequence
-    end
-    meta_info[:Minimum_length] = @minimum_length
-    meta_info[:Maximum_length] = @maximum_length
-    meta_info[:Maximum_ppm_error] = @maximum_error
-    meta_info[:Residues] = @residues.join("\t")
-    meta_info[:Derivatives] = @derivatives.join("\t")
-    meta_info[:Custom_derivative] = @custom_derivative_formula if @derivatives.include? 'x'
-    
+  def header
     header = @input_header.split(/\t/)
     header << "Length"
     header << "Derivative"
-    @residues.each do |residue|
+    @residue_codes.each do |residue|
       header << residue
     end
     header << 'Formula'
     header << 'Exp Mass'
     header << 'Error'
-    header << 'Match' if product
+    header << 'Match' unless @product_sequence.empty?
+    header
+  end
+  
+  def meta_info
+    meta_info = {:Filename => @input_file.original_filename}
+    meta_info[:Product] = @product_sequence unless @product_sequence.empty?
+    meta_info[:Minimum_length] = @minimum_length
+    meta_info[:Maximum_length] = @maximum_length
+    meta_info[:Maximum_ppm_error] = @maximum_error
+    meta_info[:Residues] = @residue_codes.join("\t")
+    meta_info[:Derivatives] = @derivative_codes.join("\t")
+    meta_info[:Custom_derivative] = @custom_derivative_formula if @derivative_codes.include? 'x'
+    meta_info
+  end
+  
+  def process
+
+    residues = MassMatcherInput.parse_residue_codes(@residue_codes)
+    derivatives = MassMatcherInput.parse_derivative_codes(@derivative_codes, @custom_derivative_formula)
+    oligo_set = OligoCompSet.new(@minimum_length,@maximum_length,residues,derivatives)
+    
+    mass_index = @input_header.split("\t").index("Mass")
+    
+    unless @product_sequence.empty?
+      product = true
+      fragcomps_array = MassMatcherInput.fragment_product_sequence(@product_sequence)
+    end
     
     output = []
     @file_data.each do |row|
@@ -160,8 +150,38 @@ class MassMatcherInput
       end
     end
     
-    [meta_info, header, output]
+    output
     
   end
-    
+  
+  class << self
+    def parse_residue_codes(code_array)
+      residues = []
+      code_array.each do |residue_code|
+        residue_code.scan(/([a-z]+)([A-Z]+)/) do |sugar, base|
+          residues << Residue.new(sugar,base)
+        end
+      end
+      residues
+    end
+    def parse_derivative_codes(code_array, custom_formula = '')
+      derivatives = []
+      code_array.each do |derivative_code|
+        if derivative_code == 'x'
+          derivatives << Derivative.new(derivative_code, custom_formula) 
+        else
+          derivatives << Derivative.new(derivative_code)
+        end
+      end
+      derivatives
+    end
+    def fragment_product_sequence(product_base_string)
+      residue_array = []
+      base_array = product_base_string.split('')
+      base_array.each { |base| residue_array << Residue.new('r', base) }
+      fragcomps_array = OligoSeq.new(residue_array, Derivative.new('p')).all_fragment_basecomps
+      fragcomps_array
+    end
+  end
+  
 end
