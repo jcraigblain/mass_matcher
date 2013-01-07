@@ -21,8 +21,6 @@ class MassMatcherInputsController < ApplicationController
       redirect_to file_match_form_path
     end
     
-    
-    
     if download == "1"
       content = ''
       @meta_info.each do |key, value|
@@ -33,7 +31,7 @@ class MassMatcherInputsController < ApplicationController
         line = line.join("\t")
         content += "\n" + line
       end  
-      send_data content, :type => 'text', :disposition => "attachment; filename=test_file.txt"
+      send_data content, :type => 'text', :disposition => "attachment; filename=#{mm_input.output_filename}"
     end
   end
   

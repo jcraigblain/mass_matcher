@@ -80,6 +80,12 @@ class MassMatcherInput
     errors.add(:product_sequence, "contains invalid bases") if error 
   end
   
+  def output_filename
+    output_filename = @input_file.original_filename.gsub(/\.txt/,'')
+    output_filename += '_output.txt'
+    output_filename
+  end
+  
   def process
     
     residues = []
