@@ -2,10 +2,9 @@ class MassMatcherInput
   include ActiveModel::Validations
   
   attr_reader :errors
-  attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file
+  attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file, :input_header, :file_data
   
-  validates_with MatchParametersValidator
-  validate :input_file_valid
+  validates_with MatchParametersValidator, InputDataValidator
 
   def initialize(attributes)
     @errors = ActiveModel::Errors.new(self)
@@ -30,14 +29,9 @@ class MassMatcherInput
       end
       @input_header = @file_data.shift
     end
-  end
-  
-  def input_file_valid
-    if @input_file.nil?
-      errors.add(:input_file, "must be provided")
-    elsif !@input_header.match(/Mass/) || @input_header.empty? || @file_data.empty?
-      errors.add(:input_file, "must have a 'Mass' header and at least one row of data")
-    end
+    
+    
+    
   end
   
   def output_filename
