@@ -11,9 +11,9 @@ class MassMatcherInput
   attr_reader :errors
   attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file
   
-  validate :derivatives_valid, :residues_valid, :min_len_less_than_max_len, :product_sequence_valid, :residue_count_valid, :input_file_valid
-  validates :minimum_length, :presence => true, :numericality => { :only_integer => true, :greater_than => 0, :less_than_or_equal_to => MAXIMUM_LENGTH}
-  validates :maximum_length, :presence => true, :numericality => { :only_integer => true, :greater_than_or_equal_to => 1, :less_than_or_equal_to => MAXIMUM_LENGTH}
+  
+  validate :derivatives_valid, :residues_valid, :product_sequence_valid, :residue_count_valid, :input_file_valid
+  validates_with MatchParametersValidator
   validates :maximum_error, :presence => true, :numericality => { :greater_than => 0, :less_than_or_equal_to => MAXIMUM_PPM }
 
   def initialize(attributes = {})
@@ -55,9 +55,6 @@ class MassMatcherInput
   end
   def residues_valid
     errors.add(:residues, "not valid") unless @residue_codes == @residue_codes & Residue.known_codes
-  end
-  def min_len_less_than_max_len
-    errors.add(:minimum_length, "must be less than or equal to maximum length") unless @minimum_length <= @maximum_length
   end
   def residue_count_valid
     if @residue_codes.nil?
@@ -178,5 +175,15 @@ class MassMatcherInput
       fragcomps_array
     end
   end
-  
+end
+
+class MatchParamtersValidator < ActiveRecord::Validator
+  def validate()
+    record.errors[:minimum_length] << 'must be an integer' unless record.minimum_length.is_a? Integer
+    record.errors[:maximum_length] << 'must be an integer' unless record.maximum_length.is_a? Integer
+    record.errors[:minimum_length] << "must be greater than zero and less than maximum length" if record.minimum_length < 1 || record.minimum_length > record.maximum_length
+    record.errors[:maximum_length] << "must be at least minimum length and at most #{MAXIMUM_LENGTH}" if record.maximum_length < record.minimum_length || record.maximum_length > MAXIMUM_LENGTH
+     
+      
+  end
 end
