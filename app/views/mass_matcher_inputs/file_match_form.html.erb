@@ -19,7 +19,7 @@
 	<%= text_field_tag(:product_seq, '', :size => 30, :maxlength => 20, :placeholder => "Optional")%>
 	
 	<p><%=label_tag(:download, "Download results:")%><%= check_box_tag :download, value=1%></p>
-	<p><%= file_field_tag 'input_data'%></p>
+	<p><%= file_field_tag 'input_file'%></p>
 	
 	<%= submit_tag 'Submit'%>
 <% end %>

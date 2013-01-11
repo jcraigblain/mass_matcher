@@ -5,20 +5,15 @@ require('./lib/mass_matcher/oligo_seq')
 
 class MassMatcherInput
   include ActiveModel::Validations
-  #include ActiveModel::Conversion
-  #extend ActiveModel::Naming
   
   attr_reader :errors
   attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file
   
-  
-  validate :derivatives_valid, :residues_valid, :product_sequence_valid, :residue_count_valid, :input_file_valid
   validates_with MatchParametersValidator
-  validates :maximum_error, :presence => true, :numericality => { :greater_than => 0, :less_than_or_equal_to => MAXIMUM_PPM }
+  validate :derivatives_valid, :residues_valid, :product_sequence_valid, :residue_count_valid, :input_file_valid
 
-  def initialize(attributes = {})
+  def initialize(attributes)
     @errors = ActiveModel::Errors.new(self)
-    
     @minimum_length = attributes[:min_len].to_i
     @maximum_length = attributes[:max_len].to_i
     @maximum_error = attributes[:max_ppm].to_f
@@ -29,7 +24,7 @@ class MassMatcherInput
       @custom_derivative_formula = attributes[:custom_derivative]
     end
     @product_sequence = attributes[:product_seq].upcase.gsub(/\W/,'')
-    @input_file = attributes[:input_data]
+    @input_file = attributes[:input_file]
     
     unless @input_file.nil?
       @file_data = @input_file.read
@@ -42,10 +37,6 @@ class MassMatcherInput
     end
   end
   
-  def persisted?
-    false
-  end
-    
   def derivatives_valid
     if @derivative_codes.length == 0
       errors.add(:derivatives, "must be selected")
