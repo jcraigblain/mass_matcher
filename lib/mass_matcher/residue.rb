@@ -1,5 +1,3 @@
-require('./lib/mass_matcher/formula')
-
 class Residue
   SUGAR = { :n => {:formula => 'C5H9NO4P', :name => 'amino-dideoxyribo'},
             :r => {:formula => 'C5H8O6P', :name => 'ribo'},

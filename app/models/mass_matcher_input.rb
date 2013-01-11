@@ -1,8 +1,3 @@
-require('./lib/mass_matcher/residue')
-require('./lib/mass_matcher/derivative')
-require('./lib/mass_matcher/residue')
-require('./lib/mass_matcher/oligo_seq')
-
 class MassMatcherInput
   include ActiveModel::Validations
   
@@ -10,7 +5,7 @@ class MassMatcherInput
   attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file
   
   validates_with MatchParametersValidator
-  validate :derivatives_valid, :residues_valid, :product_sequence_valid, :residue_count_valid, :input_file_valid
+  validate :input_file_valid
 
   def initialize(attributes)
     @errors = ActiveModel::Errors.new(self)
@@ -37,35 +32,12 @@ class MassMatcherInput
     end
   end
   
-  def derivatives_valid
-    if @derivative_codes.length == 0
-      errors.add(:derivatives, "must be selected")
-    elsif @derivative_codes != @derivative_codes & Derivative.known_codes
-      errors.add(:derivatives, "not valid")
-    end
-  end
-  def residues_valid
-    errors.add(:residues, "not valid") unless @residue_codes == @residue_codes & Residue.known_codes
-  end
-  def residue_count_valid
-    if @residue_codes.nil?
-      errors.add(:residues, "must be selected")
-    elsif @residue_codes.length > MAXIMUM_RESIDUES
-      errors.add(:residues, "cannot exceed 5 in count")
-    end 
-  end
   def input_file_valid
     if @input_file.nil?
       errors.add(:input_file, "must be provided")
     elsif !@input_header.match(/Mass/) || @input_header.empty? || @file_data.empty?
       errors.add(:input_file, "must have a 'Mass' header and at least one row of data")
     end
-  end
-  def product_sequence_valid
-    error = false
-    acceptable_bases = Residue.known_base_codes
-    @product_sequence.split('').each { |base| error = true if !acceptable_bases.include?(base) }
-    errors.add(:product_sequence, "contains invalid bases") if error 
   end
   
   def output_filename

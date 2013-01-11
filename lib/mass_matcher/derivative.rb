@@ -1,5 +1,3 @@
-require ('./lib/mass_matcher/formula')
-
 class Derivative < Object
   
   DERIVATIVE = {:c => {:formula => 'C0', :name => 'Cycle'},

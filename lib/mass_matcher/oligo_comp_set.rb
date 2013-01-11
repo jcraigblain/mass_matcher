@@ -1,5 +1,3 @@
-require('./lib/mass_matcher/oligo_comp')
-
 class OligoCompSet
   
   include Enumerable

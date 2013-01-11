@@ -1,7 +1,3 @@
-require('./lib/mass_matcher/residue')
-require('./lib/mass_matcher/derivative')
-require('./lib/mass_matcher/formula')
-
 class OligoComp
   
   def initialize(residue_hash, derivative)

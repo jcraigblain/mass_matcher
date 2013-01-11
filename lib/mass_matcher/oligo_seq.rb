@@ -1,7 +1,3 @@
-require('./lib/mass_matcher/formula')
-require('./lib/mass_matcher/residue')
-require('./lib/mass_matcher/derivative')
-
 class OligoSeq
   
   def initialize(residue_array, derivative)
