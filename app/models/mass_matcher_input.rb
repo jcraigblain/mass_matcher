@@ -101,25 +101,22 @@ class MassMatcherInput
   end
   
   def meta_info
-    meta_info = {:Filename => @input_file.original_filename}
-    meta_info[:Product] = @product_sequence unless @product_sequence.empty?
-    meta_info[:Minimum_length] = @minimum_length
-    meta_info[:Maximum_length] = @maximum_length
-    meta_info[:Maximum_ppm_error] = @maximum_error
-    meta_info[:Residues] = @residue_codes.join("\t")
-    meta_info[:Derivatives] = @derivative_codes.join("\t")
-    meta_info[:Custom_derivative] = @custom_derivative_formula if @derivative_codes.include? 'x'
+    meta_info = {'Filename' => @input_file.original_filename}
+    meta_info['Product'] = @product_sequence unless @product_sequence.empty?
+    meta_info['Minimum length'] = @minimum_length
+    meta_info['Maximum length'] = @maximum_length
+    meta_info['Maximum error (ppm)'] = @maximum_error
+    meta_info['Residues'] = @residue_codes.join("\t")
+    meta_info['Derivatives'] = @derivative_codes.join("\t")
+    meta_info['Custom derivative'] = @custom_derivative_formula if @derivative_codes.include? 'x'
     meta_info
   end
   
-  def process
-
+  def process_file
     residues = MassMatcherInput.parse_residue_codes(@residue_codes)
     derivatives = MassMatcherInput.parse_derivative_codes(@derivative_codes, @custom_derivative_formula)
     oligo_set = OligoCompSet.new(@minimum_length,@maximum_length,residues,derivatives)
-    
     mass_index = @input_header.split("\t").index("Mass")
-    
     unless @product_sequence.empty?
       product = true
       fragcomps_array = MassMatcherInput.fragment_product_sequence(@product_sequence)
@@ -129,7 +126,7 @@ class MassMatcherInput
     @file_data.each do |row|
       row = row.split("\t")
       oligo_set.each do |oligo|
-        error = 1000000*(((oligo.mass - row[mass_index].to_r)/oligo.mass).abs)
+        error = 1000000*(((oligo.mass - row[mass_index].to_f)/oligo.mass).abs)
         if error < @maximum_error
           match = Array.new(row)
           match << oligo.length
@@ -149,9 +146,7 @@ class MassMatcherInput
         end
       end
     end
-    
     output
-    
   end
   
   class << self

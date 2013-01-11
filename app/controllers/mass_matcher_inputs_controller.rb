@@ -16,7 +16,7 @@ class MassMatcherInputsController < ApplicationController
 
     if mm_input.valid?
       @header = mm_input.header
-      @output = mm_input.process
+      @output = mm_input.process_file
     else
       flash[:error] = mm_input.errors.full_messages
       redirect_to file_match_form_path
