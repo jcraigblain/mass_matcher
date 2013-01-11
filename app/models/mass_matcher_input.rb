@@ -5,8 +5,8 @@ require('./lib/mass_matcher/oligo_seq')
 
 class MassMatcherInput
   include ActiveModel::Validations
-  include ActiveModel::Conversion
-  extend ActiveModel::Naming
+  #include ActiveModel::Conversion
+  #extend ActiveModel::Naming
   
   attr_reader :errors
   attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file
@@ -174,16 +174,5 @@ class MassMatcherInput
       fragcomps_array = OligoSeq.new(residue_array, Derivative.new('p')).all_fragment_basecomps
       fragcomps_array
     end
-  end
-end
-
-class MatchParamtersValidator < ActiveRecord::Validator
-  def validate()
-    record.errors[:minimum_length] << 'must be an integer' unless record.minimum_length.is_a? Integer
-    record.errors[:maximum_length] << 'must be an integer' unless record.maximum_length.is_a? Integer
-    record.errors[:minimum_length] << "must be greater than zero and less than maximum length" if record.minimum_length < 1 || record.minimum_length > record.maximum_length
-    record.errors[:maximum_length] << "must be at least minimum length and at most #{MAXIMUM_LENGTH}" if record.maximum_length < record.minimum_length || record.maximum_length > MAXIMUM_LENGTH
-     
-      
   end
 end
