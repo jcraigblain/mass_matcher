@@ -1,0 +1,25 @@
+<%if flash[:error]%>
+	<%flash[:error].each do |error| %>
+		<p class="error"><%=error%></p>
+	<%end%>
+<%end%>
+<%= form_tag({:action => 'mass_match_results'}, :multipart => true) do %>
+	
+	<%=render 'residue_table'%>
+	
+	<%=render 'derivatives_list'%>
+
+	<p><%= label_tag(:min_len, "Minimum length:")%>
+	<%= number_field_tag(:min_len, '1', :in => 1..MAXIMUM_LENGTH)%></p>
+	<p><%= label_tag(:max_len, "Maximum length:")%>
+	<%= number_field_tag(:max_len, '10', :in => 1..MAXIMUM_LENGTH)%></p>
+	<p><%= label_tag(:max_ppm, "Maximum ppm error:")%>
+	<%= number_field_tag(:max_ppm, '10', :min => 0.1, :max => MAXIMUM_PPM, :step => 0.1)%></p>
+	<p><%= label_tag(:product_seq, "Product base sequence (eg, AGGUCT):")%>
+	<%= text_field_tag(:product_seq, '', :size => 30, :maxlength => 20, :placeholder => "Optional")%>
+	
+	<p><%=label_tag(:download, "Download results:")%><%= check_box_tag :download, value=1%></p>
+	<p>Upload file: <%= file_field_tag 'input_file'%> -OR- <%= label_tag(:mass_list, "give list of masses:")%><%= text_field_tag(:mass_list, '', :size => 40, :maxlength => 100, :placeholder => "Optional")%></p>
+	
+	<%= submit_tag 'Submit'%>
+<% end %>
