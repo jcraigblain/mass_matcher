@@ -1,4 +1,4 @@
-require_all 'lib'
+require 'lib/validators/match_parameters_validator'
 
 class MassMatcherInput
   include ActiveModel::Validations

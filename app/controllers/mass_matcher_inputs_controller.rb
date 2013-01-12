@@ -1,5 +1,3 @@
-require_all 'lib'
-
 class MassMatcherInputsController < ApplicationController
   
   def mass_match_form
