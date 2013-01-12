@@ -2,7 +2,7 @@ class MassMatcherInput
   include ActiveModel::Validations
   
   attr_reader :errors
-  attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file, :input_header, :file_data
+  attr_accessor :minimum_length, :maximum_length, :maximum_error, :product_sequence, :derivative_codes, :residue_codes, :input_file, :input_header, :mass_list
   
   validates_with MatchParametersValidator, InputDataValidator
 
@@ -17,31 +17,43 @@ class MassMatcherInput
       @derivative_codes << 'x'
       @custom_derivative_formula = attributes[:custom_derivative]
     end
-    @product_sequence = attributes[:product_seq].upcase.gsub(/\W/,'')
+    @product_sequence = attributes[:product_seq].upcase.gsub(/[^A-Z]/,'')
     @input_file = attributes[:input_file]
     
-    unless @input_file.nil?
-      @file_data = @input_file.read
-      if @file_data =~ /\r\n/
-        @file_data = @file_data.split("\r\n")
+    if !@input_file.nil?
+      @mass_list = @input_file.read
+      if @mass_list =~ /\r\n/
+        @mass_list = @mass_list.split("\r\n")
       else
-        @file_data = @file_data.split("\n")
+        @mass_list = @mass_list.split("\n")
       end
-      @input_header = @file_data.shift
+      @input_header = @mass_list.shift
+      @mass_index = @input_header.split("\t").index("Mass")
+    elsif !attributes[:mass_list].empty?
+      @mass_list = attributes[:mass_list].gsub(/[^0-9\.,]/,'').split(',')
+      @mass_list.map! {|mass| mass.to_f}
+      @mass_index = 0;
     end
-    
-    
     
   end
   
   def output_filename
-    output_filename = @input_file.original_filename.gsub(/\.txt/,'')
+    if !@input_file.nil?
+      output_filename = @input_file.original_filename.gsub(/\.txt/,'')
+    else
+      output_filename = "MassMatcher"
+    end
     output_filename += '_output.txt'
     output_filename
   end
   
   def header
-    header = @input_header.split(/\t/)
+    header = []
+    if !@input_file.nil?
+      header += @input_header.split(/\t/)
+    else
+      header << "Mass"
+    end
     header << "Length"
     header << "Derivative"
     @residue_codes.each do |residue|
@@ -55,7 +67,12 @@ class MassMatcherInput
   end
   
   def meta_info
-    meta_info = {'Filename' => @input_file.original_filename}
+    meta_info = {}
+    if !@input_file.nil?
+      meta_info['Filename'] = @input_file.original_filename
+    else
+      meta_info['Mass list'] = @mass_list.join("\t")
+    end
     meta_info['Product'] = @product_sequence unless @product_sequence.empty?
     meta_info['Minimum length'] = @minimum_length
     meta_info['Maximum length'] = @maximum_length
@@ -70,17 +87,22 @@ class MassMatcherInput
     residues = MassMatcherInput.parse_residue_codes(@residue_codes)
     derivatives = MassMatcherInput.parse_derivative_codes(@derivative_codes, @custom_derivative_formula)
     oligo_set = OligoCompSet.new(@minimum_length,@maximum_length,residues,derivatives)
-    mass_index = @input_header.split("\t").index("Mass")
     unless @product_sequence.empty?
       product = true
       fragcomps_array = MassMatcherInput.fragment_product_sequence(@product_sequence)
     end
     
-    output = []
-    @file_data.each do |row|
-      row = row.split("\t")
+    matches = []
+    @mass_list.each do |row|
+      if row.is_a? Numeric
+        mass = row
+        row = [mass]
+      else
+        row = row.split("\t")
+        mass = row[@mass_index].to_f
+      end
       oligo_set.each do |oligo|
-        error = 1000000*(((oligo.mass - row[mass_index].to_f)/oligo.mass).abs)
+        error = 1000000*(((oligo.mass - mass)/oligo.mass).abs)
         if error < @maximum_error
           match = Array.new(row)
           match << oligo.length
@@ -96,11 +118,11 @@ class MassMatcherInput
               match << 0
             end
           end
-          output << match
+          matches << match
         end
       end
     end
-    output
+    matches
   end
   
   class << self
