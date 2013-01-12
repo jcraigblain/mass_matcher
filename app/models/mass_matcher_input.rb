@@ -1,3 +1,5 @@
+require_all 'lib'
+
 class MassMatcherInput
   include ActiveModel::Validations
   

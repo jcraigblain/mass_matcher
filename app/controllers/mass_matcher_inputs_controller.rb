@@ -1,5 +1,4 @@
-require('./lib/mass_matcher/oligo_comp_set')
-require('./lib/mass_matcher/oligo_seq')
+require_all 'lib'
 
 class MassMatcherInputsController < ApplicationController
   
