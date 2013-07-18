@@ -22,11 +22,7 @@ class MassMatcherInput
     
     if !@input_file.nil?
       @mass_list = @input_file.read
-      if @mass_list =~ /\r\n/
-        @mass_list = @mass_list.split("\r\n")
-      else
-        @mass_list = @mass_list.split("\n")
-      end
+      @mass_list = @mass_list.split(/[\r\n]+/)
       @input_header = @mass_list.shift
       @mass_index = @input_header.split("\t").index("Mass")
     elsif !attributes[:mass_list].empty?
