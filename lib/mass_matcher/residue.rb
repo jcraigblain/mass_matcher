@@ -15,7 +15,9 @@ class Residue
             :P => {:formula => 'C7H5N2O2', :name => 'propynyluracil'},
             :I => {:formula => 'C5H3N4O', :name => 'inosine'},
             :S => {:formula => 'C4H3N2OS', :name => '2-thiouracil'},
-            :R => {:formula => 'C5H5N2OS', :name => '2-thiothymine'}}
+            :R => {:formula => 'C5H5N2OS', :name => '2-thiothymine'},
+            :V => {:formula => 'C5H5N2O1Se', :name => '2/4-selenothymine'},
+            :W => {:formula => 'C5H5N5Se', :name => '6-selenoguanine'}}
             
   def initialize(sugar, base)
     @sugar = sugar.to_sym

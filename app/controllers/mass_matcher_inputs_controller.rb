@@ -16,7 +16,7 @@ class MassMatcherInputsController < ApplicationController
       @output = mm_input.process_file
     else
       flash[:error] = mm_input.errors.full_messages
-      redirect_to mass_match_form_path
+      return redirect_to mass_match_form_path
     end
     
     if download == "1"
